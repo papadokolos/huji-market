@@ -4,6 +4,7 @@ import BarChart from './components/BarChart.vue'
 import Papa from 'papaparse'
 
 
+const checkedNames = ref(['Jack'])
 const prices = ref([])
 prices.value = [
     {
@@ -101,13 +102,37 @@ prices.value = [
   </header>
 
   <main>
-    <div class="chart-container">
-      <BarChart :prices="prices"/>
+    <div class="price-compare-container">
+      <div class="selection-container">
+        <div v-for="(price, index) in prices" :key="index">
+          <input type="checkbox" :id="index" :value="price" v-model="checkedNames">
+          <label :for="index">{{price['מוצר']}}</label>
+        </div>
+      </div>
+      <div class="chart-container">
+        <BarChart :prices="prices"/>
+      </div>
     </div>
   </main>
 </template>
 
 <style scoped>
+.price-compare-container{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  direction: rtl;
+}
+
+@media (max-width: 1024px) {
+  .price-compare-container {
+    flex-direction: column;
+  }
+
+}
+.selection-container {
+  direction: rtl;
+}
 .chart-container {
   position: relative;
   margin: auto;
