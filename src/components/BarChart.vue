@@ -6,9 +6,13 @@ import Papa from 'papaparse'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-const parsedCSV = ref([])
+const props = defineProps({
+    prices: {
+        required: true
+    }
+})
 
-const prices = ref(null)
+const newestPrices = ref(null)
 const pricesByProduct = ref(null)
 const pricesDatasets = ref([])
 
@@ -114,118 +118,6 @@ function takeNewestPrice(pricesByLocation) {
     return newestPriceObject
 }
 
-watch(parsedCSV, (newCSV, oldCSV) => {
-    let newPrices = removeDuplicates(newCSV)
-    newPrices = filterOldPrices(newPrices)
-    newPrices = newPrices.map((price) => {
-        price['מחיר'] = price['מחיר'].slice(1)
-        return price
-    })
-    prices.value = newPrices
-})
-
-watch(prices, (newPrices, oldPrices) => {
-    pricesByProduct.value = groupBy(newPrices, 'מוצר')
-})
-
-watch(pricesByProduct, (newPrices, oldPrices) => {
-    let chartDatasets = []
-
-    if (newPrices) {
-        Object.entries(newPrices).forEach(([product, productPrices]) => {
-            let dataset = {
-                label: product,
-                data: productPrices,
-                backgroundColor: getNextColor()
-            }
-
-            chartDatasets.push(dataset)
-        })
-    }
-
-    pricesDatasets.value = chartDatasets
-})
-
-parsedCSV.value = [
-    {
-        "מחיר": "₪10.00",
-        "קטגוריה": "שתייה",
-        "מקום": "שפרינצק",
-        "מוצר": "קפה",
-        "תאריך": "04/06/2023"
-    },
-    {
-        "מחיר": "₪6.00",
-        "קטגוריה": "שתייה",
-        "מקום": "שפרינצק",
-        "מוצר": "תה",
-        "תאריך": "04/06/2023"
-    },
-    {
-        "מחיר": "₪22.00",
-        "קטגוריה": "מאפים",
-        "מקום": "שפרינצק",
-        "מוצר": "סנדוויץ'",
-        "תאריך": "04/06/2023"
-    },
-    {
-        "מחיר": "₪13.00",
-        "קטגוריה": "מאפים",
-        "מקום": "שפרינצק",
-        "מוצר": "קוראסון",
-        "תאריך": "04/06/2023"
-    },
-    {
-        "מחיר": "₪25.00",
-        "קטגוריה": "מאפים",
-        "מקום": "שפרינצק",
-        "מוצר": "פיצה",
-        "תאריך": "04/06/2023"
-    },
-    {
-        "מחיר": "₪9.00",
-        "קטגוריה": "שתייה",
-        "מקום": "פביאנו",
-        "מוצר": "קפה",
-        "תאריך": "05/06/2023"
-    },
-    {
-        "מחיר": "₪5.00",
-        "קטגוריה": "שתייה",
-        "מקום": "פביאנו",
-        "מוצר": "תה",
-        "תאריך": "05/06/2023"
-    },
-    {
-        "מחיר": "₪25.00",
-        "קטגוריה": "מאפים",
-        "מקום": "פביאנו",
-        "מוצר": "סנדוויץ'",
-        "תאריך": "05/06/2023"
-    },
-    {
-        "מחיר": "₪10.00",
-        "קטגוריה": "מאפים",
-        "מקום": "פביאנו",
-        "מוצר": "קוראסון",
-        "תאריך": "05/06/2023"
-    },
-    {
-        "מחיר": "₪25.00",
-        "קטגוריה": "מאפים",
-        "מקום": "פביאנו",
-        "מוצר": "פיצה",
-        "תאריך": "05/06/2023"
-    },
-    {
-        "מחיר": "₪15.00",
-        "קטגוריה": "מאפים",
-        "מקום": "פביאנו",
-        "מוצר": "סלט",
-        "תאריך": "01/06/2023"
-    }
-]
-
 const arrayOfColors = [
     'rgb(184, 59, 94, 0.6)',
     'rgb(106, 44, 112, 0.6)',
@@ -282,14 +174,37 @@ function formatNumberToNIS(price) {
     return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(price)
 }
 
-// const fileURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZTY6XCi09QLEyikc8n4wWaunF-jj8eGCDkR-s7Bc8tm9ZzswI-vKV0CfUPJnbRzhUtxc_EJu1d89W/pub?output=csv"
-// Papa.parse(fileURL, {
-//     download: true,
-//     header: true,
-//     complete: function (results) {
-//         parsedCSV.value = results.data
-//     }
-// });
+watch(pricesByProduct, (newPrices, oldPrices) => {
+    let chartDatasets = []
+
+    if (newPrices) {
+        Object.entries(newPrices).forEach(([product, productPrices]) => {
+            let dataset = {
+                label: product,
+                data: productPrices,
+                backgroundColor: getNextColor()
+            }
+
+            chartDatasets.push(dataset)
+        })
+    }
+
+    pricesDatasets.value = chartDatasets
+})
+
+watch(newestPrices, (newPrices, oldPrices) => {
+    pricesByProduct.value = groupBy(newPrices, 'מוצר')
+})
+
+watch(() => props.prices, (newPrices, oldPrices) => {
+    let filteredPrices = removeDuplicates(newPrices)
+    filteredPrices = filterOldPrices(filteredPrices)
+    filteredPrices = filteredPrices.map((price) => {
+        price['מחיר'] = price['מחיר'].slice(1)
+        return price
+    })
+    newestPrices.value = filteredPrices
+}, { immediate: true })
 </script>
 
 <template>
