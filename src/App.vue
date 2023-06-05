@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 import BarChart from './components/BarChart.vue'
+import Papa from 'papaparse'
+
 
 const prices = ref([])
 prices.value = [
@@ -88,7 +90,7 @@ prices.value = [
 //     download: true,
 //     header: true,
 //     complete: function (results) {
-//         parsedCSV.value = results.data
+//         prices.value = results.data
 //     }
 // });
 </script>
