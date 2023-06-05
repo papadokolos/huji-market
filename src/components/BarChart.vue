@@ -1,8 +1,4 @@
-<template>
-    <Bar id="my-chart-id" :data="chartData" :options="chartOptions" />
-</template>
-
-<script>
+<script setup>
 import { ref, watch, computed } from 'vue'
 import { Bar } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
@@ -15,6 +11,55 @@ const parsedCSV = ref([])
 const prices = ref(null)
 const pricesByProduct = ref(null)
 const pricesDatasets = ref([])
+
+const chartData = computed(() => {
+    return { datasets: pricesDatasets.value }
+})
+
+const chartOptions = computed(() => {
+    return {
+        responsive: true,
+        parsing: {
+            xAxisKey: 'מקום',
+            yAxisKey: 'מחיר'
+        },
+        plugins: {
+            legend: {
+                rtl: true,
+                textDirection: 'rtl'
+            },
+            tooltip: {
+                callbacks: {
+                    footer: getPriceSumForlocation,
+                    label: (context) => {
+                        let label = context.dataset.label || ''
+
+                        if (label) {
+                            label += ': '
+                        }
+                        if (context.parsed.y !== null) {
+                            label += formatNumberToNIS(context.parsed.y)
+                        }
+                        return label
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                stacked: true
+            },
+            y: {
+                ticks: {
+                    callback: (value, index, ticks) => {
+                        return formatNumberToNIS(value)
+                    }
+                },
+                stacked: true
+            }
+        }
+    }
+})
 
 function groupBy(objs, key) {
     return objs.reduce(function (r, a) {
@@ -98,7 +143,6 @@ watch(pricesByProduct, (newPrices, oldPrices) => {
         })
     }
 
-    console.log(chartDatasets)
     pricesDatasets.value = chartDatasets
 })
 
@@ -204,9 +248,18 @@ function getPriceSumForlocation(tooltipItems) {
 
     if (tooltipItems.length == 1) {
         const location = tooltipItems[0]['label']
-        prices.value.forEach((priceObject) => {
-            if (priceObject['מקום'] == location) {
-                sum += Number(priceObject['מחיר'])
+        let chart = tooltipItems[0].chart
+
+        chart.getDatasetMeta(0)
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+            const isDatasetHidden = chart.getDatasetMeta(datasetIndex).hidden
+
+            if (!isDatasetHidden) {
+                dataset.data.forEach((data) => {
+                    if (data['מקום'] == location) {
+                        sum += Number(data['מחיר'])
+                    }
+                })
             }
         })
     }
@@ -229,67 +282,16 @@ function formatNumberToNIS(price) {
     return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(price)
 }
 
-// const parsedCSV = ref(null)
-
 // const fileURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZTY6XCi09QLEyikc8n4wWaunF-jj8eGCDkR-s7Bc8tm9ZzswI-vKV0CfUPJnbRzhUtxc_EJu1d89W/pub?output=csv"
 // Papa.parse(fileURL, {
 //     download: true,
 //     header: true,
 //     complete: function (results) {
-//         console.log("Finished:", results.data);
 //         parsedCSV.value = results.data
 //     }
 // });
-
-export default {
-    name: 'BarChart',
-    components: { Bar },
-    computed: {
-        chartData() { 
-            return { datasets: pricesDatasets.value }
-        },
-        chartOptions() { return {
-            responsive: true,
-            parsing: {
-                xAxisKey: 'מקום',
-                yAxisKey: 'מחיר'
-            },
-            plugins: {
-                legend: {
-                    rtl: true,
-                    textDirection: 'rtl'
-                },
-                tooltip: {
-                    callbacks: {
-                        footer: getPriceSumForlocation,
-                        label: (context) => {
-                            let label = context.dataset.label || ''
-
-                            if (label) {
-                                label += ': '
-                            }
-                            if (context.parsed.y !== null) {
-                                label += formatNumberToNIS(context.parsed.y)
-                            }
-                            return label
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    stacked: true
-                },
-                y: {
-                    ticks: {
-                        callback: (value, index, ticks) => {
-                            return formatNumberToNIS(value)
-                        }
-                    },
-                    stacked: true
-                }
-            }
-        }}
-    }
-}
 </script>
+
+<template>
+    <Bar id="my-chart-id" :data="chartData" :options="chartOptions" />
+</template>

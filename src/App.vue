@@ -8,10 +8,17 @@ import BarChart from './components/BarChart.vue'
   </header>
 
   <main>
-    <BarChart />
+    <div class="chart-container">
+      <BarChart />
+    </div>
   </main>
 </template>
 
 <style scoped>
-
+.chart-container {
+  position: relative;
+  margin: auto;
+  height: 80vh;
+  width: 80vw;
+}
 </style>
