@@ -6,7 +6,8 @@ import { groupBy, removeDuplicates, filterOldPrices } from './assets/utils'
 
 
 const availablePrices = ref([])
-const pricesByLocation = computed(() => {
+
+const parsedPrices = computed(() => {
   let parsedPrices = availablePrices.value.map((price) => {
         price['מחיר'] = price['מחיר'].slice(1)
         return price
@@ -16,8 +17,13 @@ const pricesByLocation = computed(() => {
   parsedPrices.sort((a, b) => a['קטגוריה'].localeCompare(b['קטגוריה']))
   parsedPrices.sort((a, b) => a['מקום'].localeCompare(b['מקום']))
 
-  return groupBy(parsedPrices, 'מקום')
+  return parsedPrices
 })
+
+const pricesByLocation = computed(() => {
+  return groupBy(parsedPrices.value, 'מקום')
+})
+
 const checkedProducts = ref([])
 
 availablePrices.value = [
