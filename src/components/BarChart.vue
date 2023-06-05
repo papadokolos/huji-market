@@ -12,6 +12,7 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
 const parsedCSV = ref([])
 
+const prices = ref(null)
 const pricesByProduct = ref(null)
 const pricesDatasets = ref([])
 
@@ -69,13 +70,17 @@ function takeNewestPrice(pricesByLocation) {
 }
 
 watch(parsedCSV, (newCSV, oldCSV) => {
-    let prices = removeDuplicates(newCSV)
-    prices = filterOldPrices(prices)
-    prices = prices.map((price) => {
+    let newPrices = removeDuplicates(newCSV)
+    newPrices = filterOldPrices(newPrices)
+    newPrices = newPrices.map((price) => {
         price['מחיר'] = price['מחיר'].slice(1)
         return price
     })
-    pricesByProduct.value = groupBy(prices, 'מוצר')
+    prices.value = newPrices
+})
+
+watch(prices, (newPrices, oldPrices) => {
+    pricesByProduct.value = groupBy(newPrices, 'מוצר')
 })
 
 watch(pricesByProduct, (newPrices, oldPrices) => {
@@ -86,7 +91,7 @@ watch(pricesByProduct, (newPrices, oldPrices) => {
             let dataset = {
                 label: product,
                 data: productPrices,
-                backgroundColor: dynamicColors()
+                backgroundColor: getNextColor()
             }
 
             chartDatasets.push(dataset)
@@ -177,6 +182,40 @@ parsedCSV.value = [
     }
 ]
 
+const arrayOfColors = [
+    'rgb(184, 59, 94, 0.6)',
+    'rgb(106, 44, 112, 0.6)',
+    'rgb(240, 138, 93, 0.6)',
+    'rgb(249, 237, 105, 0.6)'
+]
+let colorIndex = 0
+
+function getNextColor() {
+    let color = arrayOfColors[colorIndex]
+    colorIndex = (colorIndex + 1) % arrayOfColors.length
+
+    return color
+}
+
+function getPriceSumForlocation(tooltipItems) {
+    let sum = 0;
+
+    if (tooltipItems.length == 1) {
+        const location = tooltipItems[0]['label']
+        prices.value.forEach((priceObject) => {
+            if (priceObject['מקום'] == location) {
+                sum += Number(priceObject['מחיר'])
+            }
+        })
+    }
+    else {
+    tooltipItems.forEach((tooltipItem) => {
+        sum += tooltipItem.parsed.y;
+    })}
+
+    return 'סה"כ: ' + formatNumberToNIS(sum);
+}
+
 function dynamicColors() {
     var r = Math.floor(Math.random() * 255);
     var g = Math.floor(Math.random() * 255);
@@ -220,6 +259,7 @@ export default {
                 },
                 tooltip: {
                     callbacks: {
+                        footer: getPriceSumForlocation,
                         label: (context) => {
                             let label = context.dataset.label || ''
 
