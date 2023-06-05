@@ -2,6 +2,7 @@
 import { ref, watch, computed } from 'vue'
 import { Bar } from 'vue-chartjs'
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js'
+import { groupBy, removeDuplicates, filterOldPrices } from '../assets/utils'
 
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
@@ -57,66 +58,14 @@ const chartOptions = computed(() => {
                 ticks: {
                     callback: (value, index, ticks) => {
                         return formatNumberToNIS(value)
-                    }
+                    },
+                    stepSize: 5
                 },
                 stacked: true
             }
         }
     }
 })
-
-function groupBy(objs, key) {
-    return objs.reduce(function (r, a) {
-        r[a[key]] = r[a[key]] || []
-        r[a[key]].push(a)
-        return r
-    }, Object.create(null))
-}
-
-function removeDuplicates(objs, keys = null) {
-    if (!objs) {
-        return null
-    }
-
-    if (keys) {
-        return objs.filter((v,i,a)=>a.findIndex(v2=>keys.every(k=>v2[k] ===v[k]))===i)
-    }
-    else {
-        return objs.filter((v,i,a)=>a.findIndex(v2=>(JSON.stringify(v2) === JSON.stringify(v)))===i)
-    }
-}
-
-function filterOldPrices(prices) {
-    let filteredPrices = []
-
-    let pricesByLocation = groupBy(prices, 'מקום')
-    Object.entries(pricesByLocation).forEach(([location, locationPrices]) => {
-        let productPrices = groupBy(locationPrices, 'מוצר')
-        Object.entries(productPrices).forEach(([product, productPrices]) => {
-            if (productPrices) {
-                let newestPrice = takeNewestPrice(productPrices)
-                filteredPrices.push(newestPrice)
-            }
-        })
-    })
-
-    return filteredPrices
-}
-
-function takeNewestPrice(pricesByLocation) {
-    let newestDate = new Date(pricesByLocation[0]['תאריך'])
-    let newestPriceObject = pricesByLocation[0]
-
-    pricesByLocation.forEach((priceObject) => {
-        let date = new Date(priceObject['תאריך'])
-        if (date > newestDate) {
-            newestDate = date
-            newestPriceObject = priceObject
-        }
-    })
-
-    return newestPriceObject
-}
 
 const arrayOfColors = [
     'rgb(184, 59, 94, 0.6)',
@@ -182,7 +131,8 @@ watch(pricesByProduct, (newPrices, oldPrices) => {
             let dataset = {
                 label: product,
                 data: productPrices,
-                backgroundColor: getNextColor()
+                backgroundColor: getNextColor(),
+                barPercentage: 0.25
             }
 
             chartDatasets.push(dataset)
@@ -197,12 +147,9 @@ watch(newestPrices, (newPrices, oldPrices) => {
 })
 
 watch(() => props.prices, (newPrices, oldPrices) => {
+    colorIndex = 0
     let filteredPrices = removeDuplicates(newPrices)
     filteredPrices = filterOldPrices(filteredPrices)
-    filteredPrices = filteredPrices.map((price) => {
-        price['מחיר'] = price['מחיר'].slice(1)
-        return price
-    })
     newestPrices.value = filteredPrices
 }, { immediate: true })
 </script>
@@ -210,3 +157,6 @@ watch(() => props.prices, (newPrices, oldPrices) => {
 <template>
     <Bar id="my-chart-id" :data="chartData" :options="chartOptions" />
 </template>
+
+<style scoped>
+</style>

@@ -1,12 +1,22 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import BarChart from './components/BarChart.vue'
 import Papa from 'papaparse'
+import { groupBy, removeDuplicates, filterOldPrices } from './assets/utils'
 
 
-const checkedNames = ref(['Jack'])
-const prices = ref([])
-prices.value = [
+const availablePrices = ref([])
+const pricesByLocation = computed(() => {
+  let parsedPrices = availablePrices.value.map((price) => {
+        price['מחיר'] = price['מחיר'].slice(1)
+        return price
+    })
+
+  return groupBy(parsedPrices, 'מקום')
+})
+const checkedProducts = ref([])
+
+availablePrices.value = [
     {
         "מחיר": "₪10.00",
         "קטגוריה": "שתייה",
@@ -104,13 +114,17 @@ prices.value = [
   <main>
     <div class="price-compare-container">
       <div class="selection-container">
-        <div v-for="(price, index) in prices" :key="index">
-          <input type="checkbox" :id="index" :value="price" v-model="checkedNames">
-          <label :for="index">{{price['מוצר']}}</label>
+        <h2>בחרו מוצרים להשוואה:</h2>
+        <div v-for="(prices, location, index) in pricesByLocation" :key="index">
+          <h3>{{ location }}</h3>
+          <div v-for="(price, nestedIndex) in prices" :key="nestedIndex">
+            <input type="checkbox" :id="100 * (index+1) + (nestedIndex+1)" :value="price" v-model="checkedProducts">
+            <label :for="100 * (index+1) + (nestedIndex+1)">{{price['מוצר']}}</label>
+          </div>
         </div>
       </div>
       <div class="chart-container">
-        <BarChart :prices="prices"/>
+        <BarChart :prices="checkedProducts"/>
       </div>
     </div>
   </main>
@@ -122,9 +136,10 @@ prices.value = [
   flex-wrap: wrap;
   justify-content: center;
   direction: rtl;
+  font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1024px) or (max-height: 400px) {
   .price-compare-container {
     flex-direction: column;
   }
@@ -132,6 +147,7 @@ prices.value = [
 }
 .selection-container {
   direction: rtl;
+  margin-bottom: 5vh;
 }
 .chart-container {
   position: relative;
