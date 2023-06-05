@@ -61,7 +61,10 @@ const chartOptions = computed(() => {
                     },
                     stepSize: 5
                 },
-                stacked: true
+                stacked: true,
+                afterDataLimits: function(axis) {
+                    axis.max += 1; // add 1px to top
+                }
             }
         }
     }
