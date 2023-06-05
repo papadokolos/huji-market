@@ -12,6 +12,10 @@ const pricesByLocation = computed(() => {
         return price
     })
 
+  parsedPrices.sort((a, b) => a['מוצר'].localeCompare(b['מוצר']))
+  parsedPrices.sort((a, b) => a['קטגוריה'].localeCompare(b['קטגוריה']))
+  parsedPrices.sort((a, b) => a['מקום'].localeCompare(b['מקום']))
+
   return groupBy(parsedPrices, 'מקום')
 })
 const checkedProducts = ref([])
