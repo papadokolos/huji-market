@@ -40,6 +40,10 @@ const chartOptions = computed(() => {
             legend: {
                 rtl: true,
                 textDirection: 'rtl'
+            },
+            tooltip: {
+                rtl: false,
+                textDirection: 'ltr'
             }
         },
         scales: {
@@ -48,13 +52,12 @@ const chartOptions = computed(() => {
                 type: 'time',
                 time: {
                     // unit: 'month',
-                    // tooltipFormat: 'DD T'
+                    tooltipFormat: 'dd LLL yyyy'
                 },
                 ticks:{
                     // source: 'data',
                     autoSkip: true,
                     maxTicksLimit: 5
-                    // minRotation: 30
                 },
             },
             y: {

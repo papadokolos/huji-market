@@ -168,7 +168,8 @@ availablePrices.value = [
     }
 ]
 
-// const fileURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZTY6XCi09QLEyikc8n4wWaunF-jj8eGCDkR-s7Bc8tm9ZzswI-vKV0CfUPJnbRzhUtxc_EJu1d89W/pub?output=csv"
+const fileURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSZTY6XCi09QLEyikc8n4wWaunF-jj8eGCDkR-s7Bc8tm9ZzswI-vKV0CfUPJnbRzhUtxc_EJu1d89W/pub?output=csv"
+const fileURLHumanFriendly = fileURL.slice(0, -11)
 // Papa.parse(fileURL, {
 //     download: true,
 //     header: true,
@@ -212,9 +213,28 @@ availablePrices.value = [
       </div>
     </div>
   </main>
+
+  <footer>
+    <hr/>
+    <div>
+      האתר נבנה באמצעות Vue.js.
+      המחירים מעודכנים לפי קובץ
+      <a :href="fileURLHumanFriendly">המחירון</a>.
+      <br/>
+      * מחירי השתייה לפי כוס חד-פעמית - תתכן הנחה למי שמביא כוס רב-פעמית.
+    </div>
+  </footer>
 </template>
 
 <style scoped>
+
+footer {
+  margin-top: auto;
+  display: box;
+  direction: rtl;
+  font-size: smaller;
+  font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
+}
 .title {
   direction: rtl;
   font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
@@ -231,6 +251,7 @@ availablePrices.value = [
 
 .price-compare-container{
   display: flex;
+  flex-direction: column;
   /* flex-wrap: wrap; */
   justify-content: center;
   direction: rtl;
@@ -246,19 +267,17 @@ availablePrices.value = [
   position: relative;
   margin-left: 1vh;
   margin-right: 4vh;
-  height: 80vh;
-  width: 80vw;
 }
 
 .line-chart-container {
   position: relative;
   margin-left: 1vh;
   margin-right: 3vh;
-  height: 60vh;
-  width: 50vw;
+  /* height: 60vh;
+  width: 50vw; */
 }
 
-@media (max-width: 1024px) or (max-height: 400px) {
+/* @media (max-width: 1024px) or (max-height: 400px) {
   .price-compare-container {
     flex-direction: column;
   }
@@ -272,5 +291,5 @@ availablePrices.value = [
     height: 30vh;
     width: 80vw;
   }
-}
+} */
 </style>
