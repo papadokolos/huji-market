@@ -34,8 +34,13 @@ const chartOptions = computed(() => {
             xAxisKey: 'תאריך',
             yAxisKey: 'מחיר'
         },
-        pointRadius: 5,
-        pointHoverRadius: 10,
+        elements: {
+            point: {
+                radius: 10,
+                hoverRadius: 15,
+                hitRadius: 10
+            }
+        },
         plugins: {
             legend: {
                 rtl: true,
