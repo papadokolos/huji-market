@@ -13,7 +13,6 @@ const props = defineProps({
     }
 })
 
-const newestPrices = ref(null)
 const pricesByProduct = ref(null)
 const pricesDatasets = ref([])
 
@@ -145,20 +144,15 @@ watch(pricesByProduct, (newPrices, oldPrices) => {
     pricesDatasets.value = chartDatasets
 })
 
-watch(newestPrices, (newPrices, oldPrices) => {
-    pricesByProduct.value = groupBy(newPrices, 'מוצר')
-})
-
 watch(() => props.prices, (newPrices, oldPrices) => {
     colorIndex = 0
-    let filteredPrices = removeDuplicates(newPrices)
-    filteredPrices = filterOldPrices(filteredPrices)
-    newestPrices.value = filteredPrices
+    let filteredPrices = filterOldPrices(newPrices)
+    pricesByProduct.value = groupBy(filteredPrices, 'מוצר')
 }, { immediate: true })
 </script>
 
 <template>
-    <Bar id="my-chart-id" :data="chartData" :options="chartOptions" />
+    <Bar :data="chartData" :options="chartOptions" />
 </template>
 
 <style scoped>
