@@ -149,20 +149,25 @@ availablePrices.value = [
   font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
 }
 
-@media (max-width: 1024px) or (max-height: 400px) {
-  .price-compare-container {
-    flex-direction: column;
-  }
-
-}
 .selection-container {
   direction: rtl;
   margin-bottom: 5vh;
 }
 .chart-container {
   position: relative;
-  margin: auto;
+  margin-left: 1vh;
+  margin-right: 6vh;
   height: 80vh;
   width: 80vw;
+}
+
+@media (max-width: 1024px) or (max-height: 400px) {
+  .price-compare-container {
+    flex-direction: column;
+  }
+
+  .chart-container {
+    height: 40vh;
+  }
 }
 </style>
